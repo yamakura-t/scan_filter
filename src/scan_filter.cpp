@@ -39,7 +39,15 @@ public:
 
   void filter(void)
   {
-    scan_filtered = scan_base;
+    scan_filtered.angle_increment = scan_base.angle_increment;
+    scan_filtered.angle_max = scan_base.angle_max;
+    scan_filtered.angle_min = scan_base.angle_min;
+    scan_filtered.header = scan_base.header;
+    scan_filtered.intensities = scan_base.intensities;
+    scan_filtered.range_max = scan_base.range_max;
+    scan_filtered.range_min = scan_base.range_min;
+    scan_filtered.scan_time = scan_base.scan_time;
+    scan_filtered.time_increment = scan_base.time_increment;
 
     for (int i = 0; i < scan_base.ranges.size(); i++)
     {
