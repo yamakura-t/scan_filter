@@ -13,12 +13,13 @@ private:
   ros::Rate loop_rate;
 
   // 他パッケージの都合上(cmd_vel -> cmd_vel_filter)の順番にしました.
-  ros::Publisher pub = nh.advertise<sensor_msgs::LaserScan>("topurg_front_filtered", 10);
-  ros::Subscriber sub = nh.subscribe("topurg_front", 1, &ScanFilter::LaserScanSubCallback, this);
+  ros::Publisher pub = nh.advertise<sensor_msgs::LaserScan>("topurg_front_filtered/scan", 10);
+  ros::Subscriber sub = nh.subscribe("topurg_front/scan", 1, &ScanFilter::LaserScanSubCallback, this);
 
   sensor_msgs::LaserScan scan_base;
   sensor_msgs::LaserScan scan_filtered;
   int maxRange;    //[m]
+  int flag = false;
 
 public:
   ScanFilter(
@@ -30,6 +31,7 @@ public:
   void LaserScanSubCallback(const sensor_msgs::LaserScan::ConstPtr &msg)
   {
     scan_base = *msg;
+    flag = true;
   }
 
   void setMaxRange(int range)
@@ -39,17 +41,11 @@ public:
 
   void filter(void)
   {
-    scan_filtered.angle_increment = scan_base.angle_increment;
-    scan_filtered.angle_max = scan_base.angle_max;
-    scan_filtered.angle_min = scan_base.angle_min;
-    scan_filtered.header = scan_base.header;
-    scan_filtered.intensities = scan_base.intensities;
-    scan_filtered.range_max = scan_base.range_max;
-    scan_filtered.range_min = scan_base.range_min;
-    scan_filtered.scan_time = scan_base.scan_time;
-    scan_filtered.time_increment = scan_base.time_increment;
+    scan_filtered = scan_base;
 
-    for (int i = 0; i < scan_base.ranges.size(); i++)
+    int step = std::round((scan_base.angle_max - scan_base.angle_min)/scan_base.angle_increment) + 1;
+
+    for (int i = 0; i < step; i++)
     {
       if (!std::isfinite(scan_base.ranges[i]))
       {
@@ -72,10 +68,12 @@ public:
     {
       ros::spinOnce();
 
+    if(flag){
       filter();
       sensor_msgs::LaserScan msg = scan_filtered;
 
       pub.publish(msg);
+    }
 
       loop_rate.sleep();
     }
@@ -90,7 +88,7 @@ int main(int argc, char *argv[])
   ros::Rate loop_rate(50); // Hz
 
   ScanFilter filter(nh, nh_private, loop_rate);
-  filter.setMaxRange(atoi(argv[1]));
+  filter.setMaxRange(30);
   filter.start();
 
   ros::shutdown();
