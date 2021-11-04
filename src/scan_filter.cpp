@@ -13,8 +13,8 @@ private:
   ros::Rate loop_rate;
 
   // 他パッケージの都合上(cmd_vel -> cmd_vel_filter)の順番にしました.
-  ros::Publisher pub = nh.advertise<sensor_msgs::LaserScan>("topurg_front_filtered/scan", 10);
-  ros::Subscriber sub = nh.subscribe("topurg_front/scan", 1, &ScanFilter::LaserScanSubCallback, this);
+  ros::Publisher pub = nh.advertise<sensor_msgs::LaserScan>("/filtered", 10);
+  ros::Subscriber sub = nh.subscribe("/scan", 1, &ScanFilter::LaserScanSubCallback, this);
 
   sensor_msgs::LaserScan scan_base;
   sensor_msgs::LaserScan scan_filtered;
